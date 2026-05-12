@@ -15,14 +15,24 @@ These skills work together as a **feature review chain**. You don't run them all
                        +--------------------+
                                   | GO   (BLOCK -> stop, explain why)
                                   v
+                  Is this surface prospect-facing or resident-facing?
+                                  |
               +-------------------+-------------------+
+              | prospect-facing                      | resident-facing
               v                                       v
-     +------------------+                   +------------------+
-     | il-resident      |   (parallel)      | il-staff         |
-     | -critic          |                   | -critic          |
-     +------------------+                   +------------------+
-              +----------------+-----------------------+
-                               v
+     +-------------------------+              +------------------+
+     | senior-living-advisor   |              | il-resident      |
+     | (Linda, CRD)            |              | -critic          |
+     +-------------------------+              +------------------+
+                  \                                  /
+                   \         (run in parallel)      /
+                    \                              /
+                     v                            v
+              +--------------------+   +--------------------+
+              | il-staff-critic    |   | il-staff-critic    |   (always runs)
+              +--------------------+   +--------------------+
+                              +--------+
+                              v
                   +-----------------------------+
                   | senior-living-software-     |  "Commodity or whitespace?"
                   | landscape                   |
@@ -46,9 +56,21 @@ These skills work together as a **feature review chain**. You don't run them all
 |---|---|
 | Run the full review with looping | `il-feature-review` |
 | Sanity-check whether a feature is even IL-appropriate | `il-scope-gate` |
-| See if copy/UX would confuse or condescend to a resident | `il-resident-critic` |
+| See if copy/UX would confuse or condescend to a **resident** (post-move-in) | `il-resident-critic` |
+| Get the **Community Relations Director (Linda)** lens on prospect-facing surfaces | `senior-living-advisor` |
 | See if a workflow saves or creates work for staff | `il-staff-critic` |
 | Check whether a competitor already nailed this | `senior-living-software-landscape` |
+
+## Prospect-facing vs. resident-facing
+
+The two persona critics serve different stages of the customer relationship and rarely both apply at once.
+
+- **Prospect-facing** (Awareness → Selection): the adult child is the primary user. The mother often hasn't seen the surface. Use `senior-living-advisor`.
+- **Resident-facing** (Move-in onward): the resident herself is using it. Use `il-resident-critic`.
+
+When in doubt about routing, ask: _who's looking at this screen, and where are they in the journey?_ If they've signed a lease, it's resident-facing. If they're still deciding, it's prospect-facing.
+
+The orchestrator chooses the right critic. If invoking directly, pick the one that matches the actual viewer.
 
 ## Information flow & looping
 
@@ -68,13 +90,21 @@ The orchestrator collects these, classifies concerns by severity, and:
 
 The orchestrator never overrides a HIGH severity concern. The critics are not symmetric in authority: an `il-scope-gate` BLOCK is absolute and cannot be voted around.
 
-## Conceptual distinction
+## Conceptual distinction: skills vs. agents
 
-- The four specialists (`il-scope-gate`, `il-resident-critic`, `il-staff-critic`, `senior-living-software-landscape`) are **skills**: focused, single-lens, return structured verdicts.
+- The five specialists (`il-scope-gate`, `il-resident-critic`, `il-staff-critic`, `senior-living-advisor`, `senior-living-software-landscape`) are **skills**: focused, single-lens, return structured verdicts.
 - The orchestrator (`il-feature-review`) is the **agent surface**: it coordinates the specialists, manages the loop, and produces the final decision.
+- `senior-living-advisor` also ships an `AGENT.md` for Claude Code subagent installation — it's the most agent-shaped of the specialists because it operates in two modes (generative + evaluative) and benefits from a dedicated context window when used heavily.
 
-Both are valid SKILL.md files (they work in Claude.ai and Claude Code as plain skills). When running in Claude Code, the orchestrator can spawn the specialists as parallel subagents via the Task tool. When running in a single-thread chat (Claude.ai), the orchestrator invokes them sequentially.
+All files work in Claude.ai and Claude Code as plain skills. When running in Claude Code, the orchestrator can spawn the specialists as parallel subagents via the Task tool. When running in a single-thread chat (Claude.ai), the orchestrator invokes them sequentially.
 
-## Scope
+## Building context (Cherish at Central Park)
 
-These skills assume the product is **IL-only**. When you sell into AL/MC, add care-plan, incident-report, eMAR, RAI, and clinical assessment skills _then_ — don't backport them now.
+Skills assume the product is for Cherish at Central Park in Langford BC, an **IL-only** community:
+
+- 169 suites across three wings (Jenkins, Jacklin, Avrill), which double as fire zones
+- 21 named suite types (Daisy, Iris, Lotus, Buttercup, Heather…); 128 1-bedroom, 41 2-bedroom
+- Mixed ownership: 130 purpose-built rental + 39 strata, with 30 privately-owned within
+- No assisted living, no memory care, no clinical workflows
+
+When you sell into AL/MC, add care-plan, incident-report, eMAR, RAI, and clinical-assessment skills _then_ — don't backport them now.
